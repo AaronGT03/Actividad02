@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -77,10 +78,22 @@ class _LoginState extends State<Login> {
                   height: 64,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        print(
-                            'Datos -> ${_emailController.text} ${_passwordController.text}');
+                        try {
+                          final credential = await FirebaseAuth.instance
+                              .signInWithEmailAndPassword(
+                                  email: _emailController.text,
+                                  password: _passwordController.text);
+                          print('credentials: $credential');
+                          Navigator.pushNamed(context, '/profile');
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'user-not-found') {
+                            print('No user found for that email.');
+                          } else if (e.code == 'wrong-password') {
+                            print('Wrong password provided for that user.');
+                          }
+                        }
                       }
                     },
                     style: OutlinedButton.styleFrom(
@@ -96,10 +109,18 @@ class _LoginState extends State<Login> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(
-                        context, '/email');
+                    Navigator.pushNamed(context, '/email');
                   },
-                  child: const Text('Repetir contraseña'),
+                  child: const Text('Cambiar contraseña'),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/register');
+                  },
+                  child: const Text('Registrarse'),
                 )
               ],
             ),
